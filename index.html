@@ -1,69 +1,196 @@
-        const status = document.getElementById('statusAwal').value;
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kas Komunitas - Admin Mode</title>
+    <style>
+        :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #2c3e50; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        
+        .dashboard-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .card { padding: 15px; border-radius: 12px; text-align: center; color: white; }
+        .card-lunas { background: var(--success); }
+        .card-belum { background: var(--danger); }
+        .card-orang { background: var(--warning); }
+        .amount { font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
+        .label { font-size: 10px; opacity: 0.9; text-transform: uppercase; font-weight: bold; }
 
-        if (!nama || !jumlah) return alert("Data belum lengkap!");
+        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 10px; }
+        .btn-copy { background: var(--primary); }
+        .btn-add { background: var(--dark); margin-top: 5px; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; border: none; font-weight: bold; color: white; }
+        .bg-lunas { background-color: var(--success); }
+        .bg-belum { background-color: var(--danger); }
 
+        /* Sembunyikan Form & Tombol Hapus secara default */
+        #adminForm, .admin-only { display: none; }
+
+        .form-card { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr; gap: 10px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+        .btn-delete { background: #fee; color: var(--danger); border: 1px solid var(--danger); padding: 4px 8px; border-radius: 5px; cursor: pointer; }
+
+        .login-section { text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+        .btn-login { background: none; color: #999; border: none; font-size: 12px; cursor: pointer; }
+
+        @media screen and (max-width: 600px) {
+            thead { display: none; }
+            tr { display: block; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
+            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 5px 0; }
+            td::before { content: attr(data-label); font-weight: bold; color: #777; }
+        }
+        @media screen and (min-width: 601px) { .form-card { grid-template-columns: 2fr 1fr 1fr 1fr auto; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="text-align:center; color: var(--dark); margin-top:0;">📊 Laporan Iuran Komunitas</h2>
+
+    <div class="dashboard-total">
+        <div class="card card-lunas"><span class="label">Terkumpul</span><span class="amount" id="sumLunas">Rp 0</span></div>
+        <div class="card card-belum"><span class="label">Piutang</span><span class="amount" id="sumBelum">Rp 0</span></div>
+        <div class="card card-orang"><span class="label">Belum Bayar</span><span class="amount" id="countBelum">0 Orang</span></div>
+    </div>
+
+    <button class="btn btn-copy" onclick="copyReport()">📋 Salin Laporan ke WA</button>
+
+    <div id="adminForm" class="form-card">
+        <input type="text" id="nama" placeholder="Nama Anggota">
+        <input type="number" id="jumlah" placeholder="Rp">
+        <select id="bulan">
+            <option value="Mei 2026">Mei 2026</option>
+            <option value="Juni 2026">Juni 2026</option>
+        </select>
+        <select id="statusAwal">
+            <option value="Lunas">Lunas</option>
+            <option value="Belum Lunas">Belum Lunas</option>
+        </select>
+        <button class="btn btn-add" onclick="addRow()">Tambah</button>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table>
+            <thead><tr><th>Nama</th><th>Bulan</th><th>Jumlah</th><th>Status</th><th class="admin-only">Aksi</th></tr></thead>
+            <tbody id="isiTabel"></tbody>
+        </table>
+    </div>
+
+    <div class="login-section">
+        <button id="loginBtn" class="btn-login" onclick="adminLogin()">🔐 Login Admin</button>
+        <button id="logoutBtn" class="btn-login" style="display:none;" onclick="adminLogout()">🔓 Logout</button>
+    </div>
+</div>
+
+<script>
+    // --- GANTI PASSWORD DI SINI ---
+    const PASS_ADMIN = "12345"; 
+    
+    let dataIuran = JSON.parse(localStorage.getItem('dataIuranKomunitas')) || [];
+    let isAdmin = false;
+
+    function formatRupiah(angka) {
+        return "Rp " + parseInt(angka).toLocaleString('id-ID');
+    }
+
+    function adminLogin() {
+        let inputPass = prompt("Masukkan Password Admin:");
+        if (inputPass === PASS_ADMIN) {
+            isAdmin = true;
+            alert("Berhasil Login Admin!");
+            showAdminFeatures();
+        } else {
+            alert("Password Salah!");
+        }
+    }
+
+    function adminLogout() {
+        isAdmin = false;
+        showAdminFeatures();
+    }
+
+    function showAdminFeatures() {
+        document.getElementById('adminForm').style.display = isAdmin ? 'grid' : 'none';
+        document.getElementById('logoutBtn').style.display = isAdmin ? 'inline' : 'none';
+        document.getElementById('loginBtn').style.display = isAdmin ? 'none' : 'inline';
+        renderTable();
+    }
+
+    function renderTable() {
         const table = document.getElementById("isiTabel");
-        const newRow = table.insertRow();
-        newRow.setAttribute("data-price", jumlah);
-        const badgeClass = (status === 'Lunas') ? 'bg-lunas' : 'bg-belum';
+        table.innerHTML = "";
+        let lunasRp = 0, belumRp = 0, orangBelum = 0;
 
-        newRow.innerHTML = `
-            <td data-label="Nama">${nama}</td>
-            <td data-label="Bulan">${bulan}</td>
-            <td data-label="Jumlah">${formatRupiah(jumlah)}</td>
-            <td data-label="Status"><button class="badge ${badgeClass}" onclick="toggleStatus(this)">${status.toUpperCase()}</button></td>
-            <td data-label="Aksi"><button class="btn-delete" onclick="deleteRow(this)">Hapus</button></td>
-        `;
+        dataIuran.forEach((item, index) => {
+            const row = table.insertRow();
+            const badgeClass = (item.status === 'Lunas') ? 'bg-lunas' : 'bg-belum';
+            
+            if (item.status === "Lunas") lunasRp += parseInt(item.jumlah);
+            else { belumRp += parseInt(item.jumlah); orangBelum++; }
 
+            // Tombol status hanya aktif jika admin
+            const statusAction = isAdmin ? `onclick="toggleStatus(${index})"` : "";
+            const aksiCol = isAdmin ? `<td data-label="Aksi"><button class="btn-delete" onclick="deleteRow(${index})">Hapus</button></td>` : "";
+
+            row.innerHTML = `
+                <td data-label="Nama">${item.nama}</td>
+                <td data-label="Bulan">${item.bulan}</td>
+                <td data-label="Jumlah">${formatRupiah(item.jumlah)}</td>
+                <td data-label="Status"><button class="badge ${badgeClass}" ${statusAction}>${item.status}</button></td>
+                ${aksiCol}
+            `;
+        });
+
+        document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'table-cell' : 'none');
+        
+        document.getElementById("sumLunas").innerText = formatRupiah(lunasRp);
+        document.getElementById("sumBelum").innerText = formatRupiah(belumRp);
+        document.getElementById("countBelum").innerText = orangBelum + " Orang";
+        
+        // Simpan data (Admin Only yang bisa memicu simpan ini melalui fungsi edit)
+        if (isAdmin) localStorage.setItem('dataIuranKomunitas', JSON.stringify(dataIuran));
+    }
+
+    function addRow() {
+        const nama = document.getElementById('nama').value;
+        const jumlah = document.getElementById('jumlah').value;
+        const bulan = document.getElementById('bulan').value;
+        const status = document.getElementById('statusAwal').value;
+        if (!nama || !jumlah) return alert("Data belum lengkap!");
+        dataIuran.push({ nama, jumlah, bulan, status });
+        renderTable();
         document.getElementById('nama').value = "";
         document.getElementById('jumlah').value = "";
-        calculateAll();
     }
 
-    function toggleStatus(btn) {
-        if (btn.innerText === "LUNAS") {
-            btn.innerText = "BELUM LUNAS";
-            btn.classList.replace("bg-lunas", "bg-belum");
-        } else {
-            btn.innerText = "LUNAS";
-            btn.classList.replace("bg-belum", "bg-lunas");
-        }
-        calculateAll();
+    function toggleStatus(index) {
+        dataIuran[index].status = (dataIuran[index].status === "Lunas") ? "Belum Lunas" : "Lunas";
+        renderTable();
     }
 
-    function deleteRow(btn) {
+    function deleteRow(index) {
         if (confirm("Hapus data ini?")) {
-            btn.closest('tr').remove();
-            calculateAll();
+            dataIuran.splice(index, 1);
+            renderTable();
         }
     }
 
     function copyReport() {
-        const rows = document.querySelectorAll("#isiTabel tr");
-        if (rows.length === 0) return alert("Data kosong!");
-
-        let textReport = "*REKAP PEMBAYARAN IURAN*\n\n";
-        let lunas = 0, belum = 0, count = 0;
-        
-        rows.forEach(row => {
-            const cols = row.querySelectorAll("td");
-            const nominal = parseInt(row.getAttribute("data-price"));
-            const status = cols[3].innerText;
-            const icon = (status === "LUNAS") ? "✅" : "❌";
-            
-            textReport += `${icon} *${cols[0].innerText}* (${cols[1].innerText}) - ${cols[2].innerText}\n`;
-            
-            if (status === "LUNAS") lunas += nominal;
-            else { belum += nominal; count++; }
+        if (dataIuran.length === 0) return alert("Data kosong!");
+        let textReport = "*LAPORAN KAS KOMUNITAS*\n\n";
+        dataIuran.forEach(item => {
+            const icon = (item.status === "Lunas") ? "✅" : "❌";
+            textReport += `${icon} *${item.nama}* (${item.bulan}) - ${formatRupiah(item.jumlah)}\n`;
         });
-
-        textReport += `\n--------------------------\n💰 *Lunas:* ${formatRupiah(lunas)}\n⏳ *Piutang:* ${formatRupiah(belum)}\n👥 *Belum Bayar:* ${count} Orang\n--------------------------`;
-
-        navigator.clipboard.writeText(textReport).then(() => {
-            alert("Laporan disalin!");
-        });
+        navigator.clipboard.writeText(textReport).then(() => alert("Laporan disalin!"));
     }
-</script>
 
+    renderTable();
+</script>
 </body>
 </html>
