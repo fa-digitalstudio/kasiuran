@@ -200,13 +200,16 @@
     }
 
     function adminLogin() {
-        if (prompt("Password Admin:") === PASS_ADMIN) {
+        let inputPass = prompt("Password Admin:");
+        if (inputPass === PASS_ADMIN) {
             isAdmin = true;
             document.getElementById('adminForm').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'inline';
             document.getElementById('loginBtn').style.display = 'none';
             document.getElementById('thAksi').style.display = 'table-cell';
             renderTable();
+        } else if (inputPass !== null) {
+            alert("Password Salah! Akses ditolak.");
         }
     }
 
