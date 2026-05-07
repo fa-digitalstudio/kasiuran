@@ -86,7 +86,6 @@
 </div>
 
 <script>
-    // --- GANTI DENGAN URL BARU SETELAH DEPLOY ---
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGTz50Zo6tjuJZW7BJVMVpN8A4uP_l6hOfyAGwryB_ysf9o5iufRRGT9dbqMgP1JPZMw/exec"; 
     const PASS_ADMIN = "doksolid1234";
 
@@ -158,12 +157,15 @@
     }
 
     function adminLogin() {
-        if (prompt("Password:") === PASS_ADMIN) {
+        let inputPass = prompt("Password:");
+        if (inputPass === PASS_ADMIN) {
             isAdmin = true;
             document.getElementById('adminForm').style.display = 'grid';
             document.getElementById('logoutBtn').style.display = 'inline';
             document.getElementById('loginBtn').style.display = 'none';
             renderTable();
+        } else if (inputPass !== null) {
+            alert("Password Admin Salah! Silakan hub Farid.");
         }
     }
 
