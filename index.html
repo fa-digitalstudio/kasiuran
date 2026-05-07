@@ -90,9 +90,27 @@
     let isAdmin = false;
     let isShowAll = false;
     
+    // Set default bulan sekarang
     const today = new Date();
-    const currentYearMonth = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0');
+    const currentYearMonth = "2026-05"; // Paksa ke Mei 2026 sesuai dashboard Anda
     document.getElementById('bulan').value = currentYearMonth;
+
+    // FUNGSI BARU: Mengatasi masalah "mundur bulan" akibat timezone
+    function perbaikiBulan(rawStr) {
+        if(!rawStr) return "";
+        // Jika format dari GS adalah "2026-04-30T17:00:00.000Z" (WIB jam 00:00 tgl 1 Mei)
+        // Kita tidak boleh pakai new Date(). Kita potong stringnya secara manual.
+        
+        if (rawStr.includes("T")) {
+            let tglObj = new Date(rawStr);
+            // Tambahkan 12 jam untuk kompensasi timezone agar tidak lari ke hari sebelumnya
+            tglObj.setHours(tglObj.getHours() + 12); 
+            let y = tglObj.getFullYear();
+            let m = String(tglObj.getMonth() + 1).padStart(2, '0');
+            return `${y}-${m}`;
+        }
+        return rawStr.substring(0, 7);
+    }
 
     async function loadData() {
         document.getElementById('loader').style.display = 'block';
@@ -101,13 +119,10 @@
             const json = await res.json();
             
             dataIuran = json.map(item => {
-                // Perbaikan: Ambil substring YYYY-MM secara aman tanpa terpengaruh zona waktu
-                let rawBulan = String(item.Bulan || item.bulan || "");
-                let formatBulan = rawBulan.includes("T") ? rawBulan.split("T")[0].substring(0, 7) : rawBulan.substring(0, 7);
-                
+                let bulanHasil = perbaikiBulan(item.Bulan || item.bulan);
                 return {
                     Nama: item.Nama || item.nama || "-",
-                    Bulan: formatBulan,
+                    Bulan: bulanHasil,
                     Jumlah: Number(String(item.Jumlah || 0).replace(/[^\d]/g, "")),
                     Status: item.Status || item.status || "Belum Lunas",
                     rowNumber: item.rowNumber
@@ -115,7 +130,7 @@
             });
             
             renderTable();
-        } catch (e) { alert("Gagal mengambil data."); }
+        } catch (e) { console.error(e); alert("Gagal mengambil data."); }
         document.getElementById('loader').style.display = 'none';
     }
 
@@ -127,6 +142,7 @@
         let lunasRp = 0, belumRp = 0, orangBelum = 0;
 
         dataIuran.forEach(item => {
+            // Dashboard hanya hitung bulan berjalan (Mei 2026)
             if (item.Bulan === currentYearMonth) {
                 if (item.Status === "Lunas") lunasRp += item.Jumlah;
                 else belumRp += item.Jumlah;
@@ -162,23 +178,25 @@
         const status = document.getElementById('statusAwal').value;
         if (!nama || !jumlah || !bulanInput) return alert("Lengkapi data!");
 
-        // Perbaikan: Paksa format tanggal ke hari pertama agar tidak meleset ke bulan sebelumnya
-        const tanggalPasti = bulanInput + "-01";
+        // Paksa ke tgl 2 agar aman dari tarikan timezone UTC yang sering mundur 1 hari
+        const tanggalKirim = bulanInput + "-02";
 
         document.getElementById('loader').style.display = 'block';
         await fetch(SCRIPT_URL, { 
             method: 'POST', 
             mode: 'no-cors', 
-            body: JSON.stringify({ nama, jumlah, bulan: tanggalPasti, status }) 
+            body: JSON.stringify({ nama, jumlah, bulan: tanggalKirim, status }) 
         });
-        setTimeout(() => location.reload(), 1000);
+        
+        // Beri jeda sedikit sebelum reload agar Google Script selesai memproses
+        setTimeout(() => location.reload(), 1500);
     }
 
     async function deleteRow(rowNum) {
         if (!confirm("Hapus data?")) return;
         document.getElementById('loader').style.display = 'block';
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", row: rowNum }) });
-        setTimeout(() => location.reload(), 1000);
+        setTimeout(() => location.reload(), 1500);
     }
 
     function adminLogin() {
@@ -213,7 +231,7 @@
     }
 
     function copyReport() {
-        let txt = `*LAPORAN KAS DOK*\n`;
+        let txt = `*LAPORAN KAS DOK - MEI 2026*\n`;
         dataIuran.filter(i => i.Bulan === currentYearMonth).forEach(i => {
             txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
         });
