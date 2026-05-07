@@ -8,12 +8,11 @@
         :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
         .container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .dashboard-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
-        .card { padding: 15px; border-radius: 12px; text-align: center; color: white; transition: transform 0.2s; position: relative; }
+        .dashboard-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+        .card { padding: 15px; border-radius: 12px; text-align: center; color: white; transition: transform 0.2s; }
         .card-lunas { background: var(--success); }
         .card-belum { background: var(--danger); }
         .card-orang { background: var(--warning); cursor: pointer; }
-        .card-total { background: var(--info); }
         .amount { font-size: 16px; font-weight: bold; display: block; margin-top: 5px; }
         .label { font-size: 10px; opacity: 0.9; text-transform: uppercase; font-weight: bold; }
         .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 10px; }
@@ -21,15 +20,14 @@
         .btn-add { background: var(--dark); margin-top: 5px; }
         .search-container { display: none; margin-bottom: 15px; }
         .search-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; box-sizing: border-box; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; border: none; }
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; }
         .bg-lunas { background-color: var(--success); }
         .bg-belum { background-color: var(--danger); }
-        #adminForm { display: none; }
-        .form-card { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr; gap: 10px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
+        #adminForm { display: none; background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; }
+        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
-        .btn-delete { background: var(--danger); color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 10px; }
+        .btn-delete { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .loader { text-align: center; padding: 20px; display: none; color: var(--primary); font-weight: bold; }
         @media screen and (max-width: 600px) {
             thead { display: none; }
@@ -37,7 +35,6 @@
             td { display: flex; justify-content: space-between; border: none; padding: 5px 0; }
             td::before { content: attr(data-label); font-weight: bold; color: #777; }
         }
-        @media screen and (min-width: 601px) { .form-card { grid-template-columns: 2fr 1fr 1.2fr 1fr auto; } }
     </style>
 </head>
 <body>
@@ -52,12 +49,12 @@
     </div>
 
     <div id="searchBox" class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama..." onkeyup="renderTable()">
+        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama anggota..." onkeyup="renderTable()">
     </div>
 
     <button class="btn btn-copy" onclick="copyReport()">📋 Salin ke WA</button>
 
-    <div id="adminForm" class="form-card">
+    <div id="adminForm">
         <input type="text" id="nama" placeholder="Nama Anggota">
         <input type="text" id="jumlahDisplay" placeholder="Jumlah Rp" onkeyup="formatInputRupiah(this)">
         <input type="month" id="bulan">
@@ -65,10 +62,10 @@
             <option value="Lunas">Lunas</option>
             <option value="Belum Lunas">Belum Lunas</option>
         </select>
-        <button id="btnSubmit" class="btn btn-add" onclick="addRow()">Simpan</button>
+        <button class="btn btn-add" onclick="addRow()">Simpan Data</button>
     </div>
 
-    <div id="loader" class="loader">Tunggu sebentar...</div>
+    <div id="loader" class="loader">Mohon tunggu...</div>
 
     <div style="overflow-x: auto;">
         <table>
@@ -80,7 +77,7 @@
     <button id="btnShowMore" class="btn" style="background:none; color:var(--primary); border:1px solid var(--primary); margin-top:10px;" onclick="toggleShowAll()">⬇️ Cari Nama / Selengkapnya</button>
 
     <div style="text-align: center; margin-top: 20px;">
-        <button id="loginBtn" style="background:none; color:#999; border:none; cursor:pointer;" onclick="adminLogin()">🔐 Login</button>
+        <button id="loginBtn" style="background:none; color:#999; border:none; cursor:pointer;" onclick="adminLogin()">🔐 Login Admin</button>
         <button id="logoutBtn" style="display:none; background:none; color:#999; border:none; cursor:pointer;" onclick="location.reload()">🔓 Logout</button>
     </div>
 </div>
@@ -99,9 +96,13 @@
         document.getElementById('loader').style.display = 'block';
         try {
             const res = await fetch(SCRIPT_URL);
-            dataIuran = await res.json();
+            const json = await res.json();
+            dataIuran = json.map(item => ({
+                ...item,
+                Jumlah: Number(String(item.Jumlah || 0).replace(/[^\d]/g, ""))
+            }));
             renderTable();
-        } catch (e) { alert("Gagal koneksi ke database"); }
+        } catch (e) { alert("Gagal koneksi database."); }
         document.getElementById('loader').style.display = 'none';
     }
 
@@ -109,63 +110,72 @@
         const table = document.getElementById("isiTabel");
         const keyword = document.getElementById('searchInput').value.toLowerCase();
         table.innerHTML = "";
+        
         let lunasRp = 0, belumRp = 0, orangBelum = 0;
-
-        const displayData = dataIuran.filter(i => i.Nama.toLowerCase().includes(keyword));
-        const limitedData = isShowAll ? displayData : displayData.slice(0, 5);
-
-        limitedData.forEach((item) => {
+        dataIuran.forEach(item => {
             if (item.Bulan === currentMonth) {
-                if (item.Status === "Lunas") lunasRp += parseInt(item.Jumlah);
-                else belumRp += parseInt(item.Jumlah);
+                if (item.Status === "Lunas") lunasRp += item.Jumlah;
+                else belumRp += item.Jumlah;
             }
             if (item.Status === "Belum Lunas") orangBelum++;
-
-            const row = table.insertRow();
-            row.innerHTML = `
-                <td data-label="Nama">${item.Nama}</td>
-                <td data-label="Bulan">${item.Bulan}</td>
-                <td data-label="Jumlah">Rp ${parseInt(item.Jumlah).toLocaleString('id-ID')}</td>
-                <td data-label="Status"><span class="badge ${item.Status === 'Lunas' ? 'bg-lunas' : 'bg-belum'}">${item.Status}</span></td>
-                ${isAdmin ? `<td data-label="Aksi"><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">Hapus</button></td>` : ""}
-            `;
         });
 
         document.getElementById("sumLunas").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
         document.getElementById("sumBelum").innerText = "Rp " + belumRp.toLocaleString('id-ID');
         document.getElementById("countBelum").innerText = orangBelum + " Orang";
-        if(isAdmin) document.getElementById('thAksi').style.display = 'table-cell';
+
+        const filtered = dataIuran.filter(i => i.Nama.toLowerCase().includes(keyword));
+        const display = isShowAll ? filtered : filtered.slice(0, 5);
+
+        display.forEach(item => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td data-label="Nama">${item.Nama}</td>
+                <td data-label="Bulan">${item.Bulan}</td>
+                <td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
+                <td data-label="Status"><span class="badge ${item.Status === 'Lunas' ? 'bg-lunas' : 'bg-belum'}">${item.Status}</span></td>
+                ${isAdmin ? `<td data-label="Aksi"><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}
+            `;
+        });
     }
 
     async function addRow() {
         const nama = document.getElementById('nama').value;
-        const jumlah = parseInt(document.getElementById('jumlahDisplay').value.replace(/\./g, '')) || 0;
+        const jumlah = document.getElementById('jumlahDisplay').value.replace(/\./g, '');
         const bulan = document.getElementById('bulan').value;
         const status = document.getElementById('statusAwal').value;
         if (!nama || !jumlah) return alert("Isi data!");
 
         document.getElementById('loader').style.display = 'block';
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nama, jumlah, bulan, status }) });
-        location.reload();
+        setTimeout(() => location.reload(), 1500);
     }
 
     async function deleteRow(rowNum) {
-        if (!confirm("Hapus baris ini?")) return;
+        if (!confirm("Hapus baris ini dari database?")) return;
         document.getElementById('loader').style.display = 'block';
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", row: rowNum }) });
-        location.reload();
+        try {
+            await fetch(SCRIPT_URL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: JSON.stringify({ action: "delete", row: rowNum }) 
+            });
+            alert("Berhasil dihapus!");
+            location.reload();
+        } catch (e) {
+            alert("Gagal menghapus.");
+            document.getElementById('loader').style.display = 'none';
+        }
     }
 
     function adminLogin() {
-        let inputPass = prompt("Password:");
-        if (inputPass === PASS_ADMIN) {
+        if (prompt("Password Admin:") === PASS_ADMIN) {
             isAdmin = true;
-            document.getElementById('adminForm').style.display = 'grid';
+            document.getElementById('adminForm').style.display = 'block';
             document.getElementById('logoutBtn').style.display = 'inline';
             document.getElementById('loginBtn').style.display = 'none';
+            document.getElementById('thAksi').style.display = 'table-cell';
             renderTable();
-        } else if (inputPass !== null) {
-            alert("Password Admin Salah! Silakan hub Farid.");
         }
     }
 
@@ -174,14 +184,39 @@
         input.value = val ? parseInt(val).toLocaleString('id-ID') : "";
     }
 
-    function toggleShowAll() { isShowAll = !isShowAll; document.getElementById('searchBox').style.display = 'block'; renderTable(); }
+    function toggleShowAll() { 
+        isShowAll = !isShowAll; 
+        document.getElementById('searchBox').style.display = 'block'; 
+        document.getElementById('btnShowMore').innerText = isShowAll ? "⬆️ Sembunyikan" : "⬇️ Cari Nama / Selengkapnya";
+        renderTable(); 
+    }
+
+    function filterNunggak() {
+        isShowAll = true;
+        document.getElementById('searchBox').style.display = 'block';
+        renderTable();
+        const table = document.getElementById("isiTabel");
+        const dataNunggak = dataIuran.filter(i => i.Status === "Belum Lunas");
+        table.innerHTML = dataNunggak.length ? "" : "<tr><td colspan='5' style='text-align:center'>Semua Lunas!</td></tr>";
+        
+        dataNunggak.forEach(item => {
+            const row = table.insertRow();
+            row.innerHTML = `
+                <td data-label="Nama">${item.Nama}</td>
+                <td data-label="Bulan">${item.Bulan}</td>
+                <td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
+                <td data-label="Status"><span class="badge bg-belum">${item.Status}</span></td>
+                ${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}
+            `;
+        });
+    }
 
     function copyReport() {
         let txt = `*LAPORAN KAS DOK*\n`;
         dataIuran.filter(i => i.Bulan === currentMonth).forEach(i => {
-            txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${parseInt(i.Jumlah).toLocaleString('id-ID')}\n`;
+            txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
         });
-        navigator.clipboard.writeText(txt).then(() => alert("Laporan disalin!"));
+        navigator.clipboard.writeText(txt).then(() => alert("Disalin!"));
     }
 
     window.onload = loadData;
