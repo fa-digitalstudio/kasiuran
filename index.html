@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kas Komunitas - Fitur Cari Nama</title>
+    <title>Kas Komunitas DOK Online</title>
     <style>
         :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --info: #9b59b6; --dark: #2c3e50; }
         body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
@@ -11,7 +11,6 @@
         .dashboard-total { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
         .card { padding: 15px; border-radius: 12px; text-align: center; color: white; transition: transform 0.2s; position: relative; }
         .card-clickable { cursor: pointer; border: 2px solid transparent; }
-        .card-clickable:hover { opacity: 0.95; transform: translateY(-2px); }
         .card-lunas { background: var(--success); }
         .card-belum { background: var(--danger); }
         .card-orang { background: var(--warning); border: 2px solid #e67e22; }
@@ -23,38 +22,29 @@
         .btn-copy { background: var(--primary); }
         .btn-reset-filter { background: var(--dark); display: none; margin-bottom: 15px; }
         .btn-add { background: var(--dark); margin-top: 5px; }
-        .btn-update { background: #2980b9; margin-top: 5px; }
         
-        /* Input Pencarian */
         .search-container { display: none; margin-bottom: 15px; position: relative; }
-        .search-input { width: 100%; padding: 12px 40px 12px 15px; border: 2px solid var(--primary); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .search-icon { position: absolute; right: 15px; top: 12px; color: var(--primary); }
-
-        .btn-show-more { background: none; color: var(--primary); border: 1px solid var(--primary); margin-top: 15px; font-size: 13px; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; cursor: pointer; border: none; font-weight: bold; color: white; }
+        .search-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .btn-show-more { background: none; color: var(--primary); border: 1px solid var(--primary); margin-top: 15px; font-size: 13px; width: 100%; }
+        
+        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; border: none; }
         .bg-lunas { background-color: var(--success); }
         .bg-belum { background-color: var(--danger); }
         
-        #adminForm, .admin-only { display: none; }
+        #adminForm { display: none; }
         .form-card { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; display: grid; grid-template-columns: 1fr; gap: 10px; }
         input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
-        .btn-action { padding: 6px 10px; border-radius: 6px; cursor: pointer; border: 1px solid #ddd; font-size: 11px; font-weight: bold; display: inline-flex; align-items: center; gap: 4px; background: white; margin-bottom: 4px; }
-        .btn-delete { color: var(--danger); border-color: var(--danger); }
-        .btn-edit { color: var(--primary); border-color: var(--primary); }
         
-        .filter-info { background: #fff3cd; color: #856404; padding: 12px; border-radius: 8px; margin-bottom: 15px; font-size: 13px; display: none; text-align: center; font-weight: bold; border-left: 5px solid #ffc107; }
+        .loader { text-align: center; padding: 20px; display: none; color: var(--primary); font-weight: bold; }
 
         @media screen and (max-width: 600px) {
             thead { display: none; }
             tr { display: block; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
-            td { display: flex; justify-content: space-between; align-items: center; border: none; padding: 5px 0; }
+            td { display: flex; justify-content: space-between; border: none; padding: 5px 0; }
             td::before { content: attr(data-label); font-weight: bold; color: #777; }
-            td.admin-cell { justify-content: center; gap: 10px; border-top: 1px dashed #eee; margin-top: 5px; padding-top: 10px; }
-            td.admin-cell::before { content: ""; }
-            .btn-action { width: 45%; justify-content: center; }
         }
         @media screen and (min-width: 601px) { .form-card { grid-template-columns: 2fr 1fr 1.2fr 1fr auto; } }
     </style>
@@ -62,24 +52,19 @@
 <body>
 
 <div class="container">
-    <h2 style="text-align:center; color: var(--dark); margin-top:0;">📊 Dashboard Kas <span id="bulanJudul"></span></h2>
+    <h2 style="text-align:center; color: var(--dark); margin-top:0;">📊 Dashboard Kas Online <span id="bulanJudul"></span></h2>
 
     <div class="dashboard-total">
         <div class="card card-lunas"><span class="label">Masuk (Bulan Ini)</span><span class="amount" id="sumLunas">Rp 0</span></div>
         <div class="card card-belum"><span class="label">Piutang (Bulan Ini)</span><span class="amount" id="sumBelum">Rp 0</span></div>
-        <div class="card card-orang card-clickable" onclick="filterNunggak()" title="Lihat semua yang belum bayar">
-            <span class="label">Total Nunggak 🔍</span>
-            <span class="amount" id="countBelum">0 Orang</span>
-        </div>
+        <div class="card card-orang card-clickable" onclick="filterNunggak()"><span class="label">Total Nunggak 🔍</span><span class="amount" id="countBelum">0 Orang</span></div>
         <div class="card card-total"><span class="label">Total Kas</span><span class="amount" id="sumTotal">Rp 0</span></div>
     </div>
 
-    <div id="filterMessage" class="filter-info">⚠️ Menampilkan DAFTAR TUNGGAKAN (Semua bulan)</div>
     <button id="btnResetFilter" class="btn btn-reset-filter" onclick="resetFilter()">🔄 Kembali ke Daftar Lengkap</button>
 
     <div id="searchBox" class="search-container">
         <input type="text" id="searchInput" class="search-input" placeholder="Cari nama anggota..." onkeyup="renderTable()">
-        <span class="search-icon">🔍</span>
     </div>
 
     <button class="btn btn-copy" onclick="copyReport()">📋 Salin Laporan ke WA</button>
@@ -92,54 +77,55 @@
             <option value="Lunas">Lunas</option>
             <option value="Belum Lunas">Belum Lunas</option>
         </select>
-        <input type="hidden" id="editIndex" value="-1">
-        <button id="btnSubmit" class="btn btn-add" onclick="addRow()">Tambah</button>
+        <button id="btnSubmit" class="btn btn-add" onclick="addRow()">Simpan ke Google Sheet</button>
     </div>
+
+    <div id="loader" class="loader">Memproses data ke Google Sheets...</div>
 
     <div style="overflow-x: auto;">
         <table>
-            <thead><tr><th>Nama</th><th>Bulan</th><th>Jumlah</th><th>Status</th><th class="admin-only"></th></tr></thead>
+            <thead><tr><th>Nama</th><th>Bulan</th><th>Jumlah</th><th>Status</th></tr></thead>
             <tbody id="isiTabel"></tbody>
         </table>
     </div>
 
-    <button id="btnShowMore" class="btn btn-show-more" onclick="toggleShowAll()">⬇️ Lihat Selengkapnya</button>
+    <button id="btnShowMore" class="btn btn-show-more" onclick="toggleShowAll()">⬇️ Lihat Selengkapnya / Cari Nama</button>
 
-    <div style="text-align: center; margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px;">
+    <div style="text-align: center; margin-top: 20px;">
         <button id="loginBtn" style="background:none; color:#999; border:none; font-size:12px; cursor:pointer;" onclick="adminLogin()">🔐 Login Admin</button>
         <button id="logoutBtn" style="display:none; background:none; color:#999; border:none; font-size:12px; cursor:pointer;" onclick="adminLogout()">🔓 Logout</button>
     </div>
 </div>
 
 <script>
+    // --- KONFIGURASI ---
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxfstTCRamWckKdYCUUCJEwPhGugJgqh8bm6vnPwYplovyx1kf13U0-cf0MWzTAAtbJwQ/exec"; // TEMPELKAN URL GOOGLE APPS SCRIPT DI SINI
     const PASS_ADMIN = "doksolid1234"; 
-    let dataIuran = JSON.parse(localStorage.getItem('dataIuranKomunitas')) || [];
+
+    let dataIuran = [];
     let isAdmin = false;
     let isFilteringNunggak = false;
     let isShowAll = false;
-
-    const tglSekarang = new Date();
-    const currentMonth = tglSekarang.toISOString().substring(0, 7);
+    const currentMonth = new Date().toISOString().substring(0, 7);
     document.getElementById('bulan').value = currentMonth;
 
     function formatBulanIndo(val) {
         if(!val) return "-";
         const [year, month] = val.split('-');
-        const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const namaBulan = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
         return `${namaBulan[parseInt(month)-1]} ${year}`;
     }
 
-    document.getElementById('bulanJudul').innerText = "(" + formatBulanIndo(currentMonth) + ")";
-
-    function toggleShowAll() {
-        isShowAll = !isShowAll;
-        document.getElementById('btnShowMore').innerText = isShowAll ? "⬆️ Sembunyikan" : "⬇️ Lihat Selengkapnya";
-        document.getElementById('searchBox').style.display = isShowAll ? 'block' : 'none';
-        
-        // Reset input pencarian saat ditutup
-        if(!isShowAll) document.getElementById('searchInput').value = "";
-        
-        renderTable();
+    async function loadData() {
+        document.getElementById('loader').style.display = 'block';
+        try {
+            const res = await fetch(SCRIPT_URL);
+            dataIuran = await res.json();
+            renderTable();
+        } catch (e) {
+            console.error("Gagal ambil data", e);
+        }
+        document.getElementById('loader').style.display = 'none';
     }
 
     function renderTable() {
@@ -148,131 +134,98 @@
         table.innerHTML = "";
         
         let lunasRp = 0, belumRp = 0, orangBelumTotal = 0;
-        dataIuran.sort((a, b) => b.bulan.localeCompare(a.bulan));
         
-        // Filter Dasar (Dashboard & Nunggak)
         const filteredData = dataIuran.filter(item => {
-            const nominal = parseInt(item.jumlah);
-            if (item.bulan === currentMonth) {
-                if (item.status === "Lunas") lunasRp += nominal;
+            const nominal = parseInt(item.Jumlah || 0);
+            const bln = item.Bulan;
+            const stts = item.Status;
+
+            if (bln === currentMonth) {
+                if (stts === "Lunas") lunasRp += nominal;
                 else belumRp += nominal;
             }
-            if (item.status === "Belum Lunas") orangBelumTotal++;
-            
-            if (isFilteringNunggak) return item.status === "Belum Lunas";
+            if (stts === "Belum Lunas") orangBelumTotal++;
+            if (isFilteringNunggak) return stts === "Belum Lunas";
             return true;
         });
 
-        // Filter Pencarian Nama
-        let searchResult = filteredData.filter(item => 
-            item.nama.toLowerCase().includes(keyword)
-        );
-
-        // Potong data jika tidak sedang "Show All"
-        const displayData = isShowAll ? searchResult : searchResult.slice(0, 3);
+        let searchResult = filteredData.filter(item => item.Nama.toLowerCase().includes(keyword));
+        const displayData = isShowAll ? searchResult : searchResult.slice(0, 5);
 
         displayData.forEach((item) => {
-            const realIndex = dataIuran.indexOf(item);
             const row = table.insertRow();
-            const badgeClass = (item.status === 'Lunas') ? 'bg-lunas' : 'bg-belum';
-            const statusAction = isAdmin ? `onclick="toggleStatus(${realIndex})"` : "";
-            const aksiCol = isAdmin ? `
-                <td class="admin-only admin-cell">
-                    <button class="btn-action btn-edit" onclick="editRow(${realIndex})">📝 Edit</button>
-                    <button class="btn-action btn-delete" onclick="deleteRow(${realIndex})">🗑️ Hapus</button>
-                </td>` : "";
+            const badgeClass = (item.Status === 'Lunas') ? 'bg-lunas' : 'bg-belum';
             row.innerHTML = `
-                <td data-label="Nama">${item.nama}</td>
-                <td data-label="Bulan">${formatBulanIndo(item.bulan)}</td>
-                <td data-label="Jumlah">${formatRupiah(item.jumlah)}</td>
-                <td data-label="Status"><button class="badge ${badgeClass}" ${statusAction}>${item.status}</button></td>
-                ${aksiCol}
+                <td data-label="Nama">${item.Nama}</td>
+                <td data-label="Bulan">${formatBulanIndo(item.Bulan)}</td>
+                <td data-label="Jumlah">Rp ${parseInt(item.Jumlah).toLocaleString('id-ID')}</td>
+                <td data-label="Status"><span class="badge ${badgeClass}">${item.Status}</span></td>
             `;
         });
 
-        // Tampilkan pesan jika pencarian kosong
-        if(displayData.length === 0 && keyword !== "") {
-            table.innerHTML = "<tr><td colspan='5' style='text-align:center; padding:20px; color:#999;'>Nama tidak ditemukan...</td></tr>";
-        }
-
-        document.getElementById('btnShowMore').style.display = filteredData.length <= 3 ? 'none' : 'block';
-        document.querySelectorAll('.admin-only').forEach(el => el.style.display = isAdmin ? 'table-cell' : 'none');
-        document.getElementById("sumLunas").innerText = formatRupiah(lunasRp);
-        document.getElementById("sumBelum").innerText = formatRupiah(belumRp);
+        document.getElementById("sumLunas").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
+        document.getElementById("sumBelum").innerText = "Rp " + belumRp.toLocaleString('id-ID');
         document.getElementById("countBelum").innerText = orangBelumTotal + " Orang";
-        document.getElementById("sumTotal").innerText = formatRupiah(lunasRp);
-        
-        if (isAdmin) localStorage.setItem('dataIuranKomunitas', JSON.stringify(dataIuran));
+        document.getElementById("sumTotal").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
     }
 
-    // Fungsi format rupiah dan admin tetap sama seperti sebelumnya
-    function formatInputRupiah(input) {
-        let value = input.value.replace(/[^,\d]/g, '').toString();
-        let split = value.split(',');
-        let sisa = split[0].length % 3;
-        let rupiah = split[0].substr(0, sisa);
-        let ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-        if (ribuan) { let separator = sisa ? '.' : ''; rupiah += separator + ribuan.join('.'); }
-        input.value = rupiah;
-    }
-    function unformatRupiah(str) { return parseInt(str.toString().replace(/\./g, '')) || 0; }
-    function formatRupiah(angka) { return "Rp " + parseInt(angka).toLocaleString('id-ID'); }
-    function adminLogin() {
-        let inputPass = prompt("Masukkan Password Admin:");
-        if (inputPass === PASS_ADMIN) { isAdmin = true; alert("Berhasil Login!"); showAdminFeatures(); } 
-        else { alert("Password Salah!"); }
-    }
-    function adminLogout() { isAdmin = false; showAdminFeatures(); }
-    function showAdminFeatures() {
-        document.getElementById('adminForm').style.display = isAdmin ? 'grid' : 'none';
-        document.getElementById('logoutBtn').style.display = isAdmin ? 'inline' : 'none';
-        document.getElementById('loginBtn').style.display = isAdmin ? 'none' : 'inline';
-        renderTable();
-    }
-    function filterNunggak() { isFilteringNunggak = true; isShowAll = true; document.getElementById('btnResetFilter').style.display = 'block'; document.getElementById('filterMessage').style.display = 'block'; document.getElementById('searchBox').style.display = 'block'; renderTable(); }
-    function resetFilter() { isFilteringNunggak = false; isShowAll = false; document.getElementById('btnResetFilter').style.display = 'none'; document.getElementById('filterMessage').style.display = 'none'; document.getElementById('searchBox').style.display = 'none'; renderTable(); }
-    function addRow() {
+    async function addRow() {
         const nama = document.getElementById('nama').value;
         const jumlahRaw = document.getElementById('jumlahDisplay').value;
         const bulan = document.getElementById('bulan').value;
         const status = document.getElementById('statusAwal').value;
-        const editIndex = parseInt(document.getElementById('editIndex').value);
-        const jumlah = unformatRupiah(jumlahRaw);
-        if (!nama || !jumlah || !bulan) return alert("Lengkapi data!");
-        if (editIndex === -1) { dataIuran.push({ nama, jumlah, bulan, status }); } 
-        else { dataIuran[editIndex] = { nama, jumlah, bulan, status }; document.getElementById('editIndex').value = "-1"; document.getElementById('btnSubmit').innerText = "Tambah"; }
-        renderTable(); clearForm();
+        const jumlah = parseInt(jumlahRaw.replace(/\./g, '')) || 0;
+
+        if (!nama || !jumlah) return alert("Lengkapi data!");
+
+        document.getElementById('loader').style.display = 'block';
+        document.getElementById('btnSubmit').disabled = true;
+
+        try {
+            await fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify({ nama, jumlah, bulan, status })
+            });
+            alert("Data tersimpan!");
+            location.reload();
+        } catch (e) {
+            alert("Gagal menyimpan.");
+        }
     }
-    function editRow(index) {
-        const item = dataIuran[index];
-        document.getElementById('nama').value = item.nama;
-        document.getElementById('jumlahDisplay').value = item.jumlah.toLocaleString('id-ID');
-        document.getElementById('bulan').value = item.bulan;
-        document.getElementById('statusAwal').value = item.status;
-        document.getElementById('editIndex').value = index;
-        document.getElementById('btnSubmit').innerText = "Simpan Perubahan";
-        window.scrollTo(0, 0);
+
+    function toggleShowAll() {
+        isShowAll = !isShowAll;
+        document.getElementById('searchBox').style.display = isShowAll ? 'block' : 'none';
+        renderTable();
     }
-    function clearForm() { document.getElementById('nama').value = ""; document.getElementById('jumlahDisplay').value = ""; }
-    function toggleStatus(index) { dataIuran[index].status = (dataIuran[index].status === "Lunas") ? "Belum Lunas" : "Lunas"; renderTable(); }
-    function deleteRow(index) { if (confirm("Hapus data ini?")) { dataIuran.splice(index, 1); renderTable(); } }
+
+    function adminLogin() {
+        if (prompt("Password Admin:") === PASS_ADMIN) {
+            isAdmin = true;
+            document.getElementById('adminForm').style.display = 'grid';
+            document.getElementById('logoutBtn').style.display = 'inline';
+            document.getElementById('loginBtn').style.display = 'none';
+        }
+    }
+
+    function adminLogout() { location.reload(); }
+    function filterNunggak() { isFilteringNunggak = true; isShowAll = true; document.getElementById('btnResetFilter').style.display = 'block'; renderTable(); }
+    function resetFilter() { isFilteringNunggak = false; isShowAll = false; document.getElementById('btnResetFilter').style.display = 'none'; renderTable(); }
+    function formatInputRupiah(input) {
+        let val = input.value.replace(/\D/g, "");
+        input.value = val ? parseInt(val).toLocaleString('id-ID') : "";
+    }
 
     function copyReport() {
-        if (dataIuran.length === 0) return alert("Data kosong!");
-        let textReport = `*LAPORAN KAS BULAN ${formatBulanIndo(currentMonth).toUpperCase()}*\n\n`;
-        let lunas = 0, belum = 0, countNunggak = 0;
-        dataIuran.forEach(item => {
-            if (item.bulan === currentMonth) {
-                const icon = (item.status === "Lunas") ? "✅" : "❌";
-                textReport += `${icon} *${item.nama}* - ${formatRupiah(item.jumlah)}\n`;
-                if (item.status === "Lunas") lunas += parseInt(item.jumlah);
-                else { belum += parseInt(item.jumlah); countNunggak++; }
-            }
+        let txt = `*LAPORAN KAS DOK*\n\n`;
+        dataIuran.filter(i => i.Bulan === currentMonth).forEach(i => {
+            txt += `${i.Status === 'Lunas' ? '✅' : '❌'} *${i.Nama}* - Rp ${parseInt(i.Jumlah).toLocaleString('id-ID')}\n`;
         });
-        textReport += `\n--------------------------\n💰 *Total Kas Masuk:* ${formatRupiah(lunas)}\n⏳ *Piutang:* ${formatRupiah(belum)}\n👥 *Total Nunggak:* ${countNunggak} Orang\n--------------------------\n\n*Keterangan:*\n✅ = Lunas\n❌ = Belum Lunas`;
-        navigator.clipboard.writeText(textReport).then(() => alert("Laporan disalin!"));
+        navigator.clipboard.writeText(txt).then(() => alert("Disalin!"));
     }
-    renderTable();
+
+    window.onload = loadData;
 </script>
 </body>
 </html>
