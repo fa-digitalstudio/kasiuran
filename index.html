@@ -12,7 +12,7 @@
         .card { padding: 15px; border-radius: 12px; text-align: center; color: white; }
         .card-lunas { background: var(--success); }
         .card-belum { background: var(--danger); }
-        .card-orang { background: var(--warning); grid-column: span 2; cursor: pointer; margin-top: 5px; }
+        .card-orang { background: var(--warning); grid-column: span 2; cursor: pointer; }
         .amount { font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
         .label { font-size: 10px; opacity: 0.9; text-transform: uppercase; font-weight: bold; }
         .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 10px; }
@@ -45,7 +45,7 @@
     <div class="dashboard-total">
         <div class="card card-lunas"><span class="label">Masuk (Mei 2026)</span><span class="amount" id="sumLunas">Rp 0</span></div>
         <div class="card card-belum"><span class="label">Piutang (Mei 2026)</span><span class="amount" id="sumBelum">Rp 0</span></div>
-        <div class="card card-orang" onclick="filterNunggak()"><span class="label">Total Nunggak (Semua Bulan) 🔍</span><span class="amount" id="countBelum">0 Orang</span></div>
+        <div class="card card-orang" onclick="filterNunggak()"><span class="label">Total Nunggak 🔍</span><span class="amount" id="countBelum">0 Orang</span></div>
     </div>
 
     <div id="searchBox" class="search-container">
@@ -90,7 +90,7 @@
     let isAdmin = false;
     let isShowAll = false;
     
-    // Ambil bulan sekarang dalam format YYYY-MM
+    // Ambil bulan sekarang (2026-05)
     const today = new Date();
     const currentYearMonth = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0');
     document.getElementById('bulan').value = currentYearMonth;
@@ -101,7 +101,6 @@
             const res = await fetch(SCRIPT_URL);
             const json = await res.json();
             
-            // Perbaikan: Memastikan semua data terbaca sebagai format yang benar
             dataIuran = json.map(item => ({
                 Nama: item.Nama || item.nama || "-",
                 Bulan: String(item.Bulan || item.bulan || ""),
@@ -111,7 +110,7 @@
             }));
             
             renderTable();
-        } catch (e) { alert("Gagal mengambil data. Cek SCRIPT_URL."); }
+        } catch (e) { alert("Gagal mengambil data."); }
         document.getElementById('loader').style.display = 'none';
     }
 
@@ -123,10 +122,11 @@
         let lunasRp = 0, belumRp = 0, orangBelum = 0;
 
         dataIuran.forEach(item => {
-            // LOGIKA DASHBOARD: Kita bersihkan string bulan agar cocok (menghapus spasi/karakter lain)
-            const itemBulanClean = item.Bulan.trim();
+            // PERBAIKAN DI SINI: Kita potong format "2026-04-30T..." menjadi "2026-04"
+            const shortBulan = item.Bulan.substring(0, 7); 
             
-            if (itemBulanClean.includes(currentYearMonth)) {
+            // Cek jika bulan data sama dengan bulan sekarang (2026-05)
+            if (shortBulan === currentYearMonth) {
                 if (item.Status === "Lunas") lunasRp += item.Jumlah;
                 else belumRp += item.Jumlah;
             }
@@ -134,9 +134,11 @@
             if (item.Status === "Belum Lunas") {
                 orangBelum++;
             }
+
+            // Tampilan tabel (kita tampilkan versi pendek saja agar rapi)
+            item.BulanTampil = shortBulan;
         });
 
-        // Update Dashboard
         document.getElementById("sumLunas").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
         document.getElementById("sumBelum").innerText = "Rp " + belumRp.toLocaleString('id-ID');
         document.getElementById("countBelum").innerText = orangBelum + " Orang";
@@ -148,15 +150,14 @@
             const row = table.insertRow();
             row.innerHTML = `
                 <td data-label="Nama">${item.Nama}</td>
-                <td data-label="Bulan">${item.Bulan}</td>
+                <td data-label="Bulan">${item.BulanTampil}</td>
                 <td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
                 <td data-label="Status"><span class="badge ${item.Status === 'Lunas' ? 'bg-lunas' : 'bg-belum'}">${item.Status}</span></td>
-                ${isAdmin ? `<td data-label="Aksi"><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}
+                ${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}
             `;
         });
     }
 
-    // Fungsi Tambah Data
     async function addRow() {
         const nama = document.getElementById('nama').value;
         const jumlah = document.getElementById('jumlahDisplay').value.replace(/\./g, '');
@@ -169,9 +170,8 @@
         setTimeout(() => location.reload(), 1000);
     }
 
-    // Fungsi Hapus Data
     async function deleteRow(rowNum) {
-        if (!confirm("Hapus data ini?")) return;
+        if (!confirm("Hapus data?")) return;
         document.getElementById('loader').style.display = 'block';
         await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", row: rowNum }) });
         setTimeout(() => location.reload(), 1000);
@@ -193,30 +193,27 @@
         input.value = val ? parseInt(val).toLocaleString('id-ID') : "";
     }
 
-    function toggleShowAll() { 
-        isShowAll = !isShowAll; 
-        document.getElementById('searchBox').style.display = 'block'; 
-        renderTable(); 
-    }
+    function toggleShowAll() { isShowAll = !isShowAll; document.getElementById('searchBox').style.display = 'block'; renderTable(); }
 
     function filterNunggak() {
         isShowAll = true;
         document.getElementById('searchBox').style.display = 'block';
+        renderTable();
         const table = document.getElementById("isiTabel");
         const dataNunggak = dataIuran.filter(i => i.Status === "Belum Lunas");
         table.innerHTML = dataNunggak.length ? "" : "<tr><td colspan='5' style='text-align:center'>Lunas Semua!</td></tr>";
         dataNunggak.forEach(item => {
             const row = table.insertRow();
-            row.innerHTML = `<td data-label="Nama">${item.Nama}</td><td data-label="Bulan">${item.Bulan}</td><td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td><td data-label="Status"><span class="badge bg-belum">${item.Status}</span></td>${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}`;
+            row.innerHTML = `<td data-label="Nama">${item.Nama}</td><td data-label="Bulan">${item.Bulan.substring(0,7)}</td><td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td><td data-label="Status"><span class="badge bg-belum">${item.Status}</span></td>${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">HAPUS</button></td>` : ""}`;
         });
     }
 
     function copyReport() {
         let txt = `*LAPORAN KAS DOK*\n`;
-        dataIuran.filter(i => i.Bulan.includes(currentYearMonth)).forEach(i => {
+        dataIuran.filter(i => i.Bulan.substring(0,7) === currentYearMonth).forEach(i => {
             txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
         });
-        navigator.clipboard.writeText(txt).then(() => alert("Laporan WA disalin!"));
+        navigator.clipboard.writeText(txt).then(() => alert("Disalin!"));
     }
 
     window.onload = loadData;
