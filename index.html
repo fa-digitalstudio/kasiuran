@@ -43,8 +43,8 @@
     <h2 style="text-align:center; color: var(--dark); margin-top:0;">📊 IURAN KOMUNITAS DOK</h2>
 
     <div class="dashboard-total">
-        <div class="card card-lunas"><span class="label">Masuk (Mei 2026)</span><span class="amount" id="sumLunas">Rp 0</span></div>
-        <div class="card card-belum"><span class="label">Piutang (Mei 2026)</span><span class="amount" id="sumBelum">Rp 0</span></div>
+        <div class="card card-lunas"><span class="label" id="labelLunas">Masuk</span><span class="amount" id="sumLunas">Rp 0</span></div>
+        <div class="card card-belum"><span class="label" id="labelBelum">Piutang</span><span class="amount" id="sumBelum">Rp 0</span></div>
         <div class="card card-orang" onclick="filterNunggak()"><span class="label">Total Nunggak 🔍</span><span class="amount" id="countBelum">0 Orang</span></div>
     </div>
 
@@ -90,20 +90,26 @@
     let isAdmin = false;
     let isShowAll = false;
     
-    // Set default bulan sekarang
-    const today = new Date();
-    const currentYearMonth = "2026-05"; // Paksa ke Mei 2026 sesuai dashboard Anda
-    document.getElementById('bulan').value = currentYearMonth;
+    // --- LOGIKA OTOMATIS TANGGAL ---
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
+    const currentYearMonth = `${currentYear}-${currentMonthNum}`;
+    
+    const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const namaBulanAktif = daftarBulan[now.getMonth()];
 
-    // FUNGSI BARU: Mengatasi masalah "mundur bulan" akibat timezone
+    // Set tampilan label dashboard otomatis
+    window.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('labelLunas').innerText = `Masuk (${namaBulanAktif} ${currentYear})`;
+        document.getElementById('labelBelum').innerText = `Piutang (${namaBulanAktif} ${currentYear})`;
+        document.getElementById('bulan').value = currentYearMonth;
+    });
+
     function perbaikiBulan(rawStr) {
         if(!rawStr) return "";
-        // Jika format dari GS adalah "2026-04-30T17:00:00.000Z" (WIB jam 00:00 tgl 1 Mei)
-        // Kita tidak boleh pakai new Date(). Kita potong stringnya secara manual.
-        
         if (rawStr.includes("T")) {
             let tglObj = new Date(rawStr);
-            // Tambahkan 12 jam untuk kompensasi timezone agar tidak lari ke hari sebelumnya
             tglObj.setHours(tglObj.getHours() + 12); 
             let y = tglObj.getFullYear();
             let m = String(tglObj.getMonth() + 1).padStart(2, '0');
@@ -142,7 +148,6 @@
         let lunasRp = 0, belumRp = 0, orangBelum = 0;
 
         dataIuran.forEach(item => {
-            // Dashboard hanya hitung bulan berjalan (Mei 2026)
             if (item.Bulan === currentYearMonth) {
                 if (item.Status === "Lunas") lunasRp += item.Jumlah;
                 else belumRp += item.Jumlah;
@@ -178,7 +183,6 @@
         const status = document.getElementById('statusAwal').value;
         if (!nama || !jumlah || !bulanInput) return alert("Lengkapi data!");
 
-        // Paksa ke tgl 2 agar aman dari tarikan timezone UTC yang sering mundur 1 hari
         const tanggalKirim = bulanInput + "-02";
 
         document.getElementById('loader').style.display = 'block';
@@ -188,7 +192,6 @@
             body: JSON.stringify({ nama, jumlah, bulan: tanggalKirim, status }) 
         });
         
-        // Beri jeda sedikit sebelum reload agar Google Script selesai memproses
         setTimeout(() => location.reload(), 1500);
     }
 
@@ -234,7 +237,7 @@
     }
 
     function copyReport() {
-        let txt = `*LAPORAN KAS DOK - MEI 2026*\n`;
+        let txt = `*LAPORAN KAS DOK - ${namaBulanAktif.toUpperCase()} ${currentYear}*\n`;
         dataIuran.filter(i => i.Bulan === currentYearMonth).forEach(i => {
             txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
         });
