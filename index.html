@@ -4,271 +4,463 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kas Online DOK</title>
-    <style>
-        :root { --primary: #3498db; --success: #27ae60; --danger: #e74c3c; --warning: #f39c12; --dark: #2c3e50; }
-        body { font-family: 'Segoe UI', Roboto, sans-serif; background-color: #f0f2f5; margin: 0; padding: 15px; }
-        .container { max-width: 950px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .dashboard-total { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 20px; }
-        .card { padding: 15px; border-radius: 12px; text-align: center; color: white; }
-        .card-lunas { background: var(--success); }
-        .card-belum { background: var(--danger); }
-        .card-orang { background: var(--warning); grid-column: span 2; cursor: pointer; }
-        .amount { font-size: 18px; font-weight: bold; display: block; margin-top: 5px; }
-        .label { font-size: 10px; opacity: 0.9; text-transform: uppercase; font-weight: bold; }
-        .btn { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; width: 100%; margin-bottom: 10px; }
-        .btn-copy { background: var(--primary); }
-        .btn-add { background: var(--dark); margin-top: 5px; }
-        .search-container { display: none; margin-bottom: 15px; }
-        .search-input { width: 100%; padding: 12px; border: 2px solid var(--primary); border-radius: 8px; box-sizing: border-box; }
-        .badge { padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; }
-        .bg-lunas { background-color: var(--success); }
-        .bg-belum { background-color: var(--danger); }
-        #adminForm { display: none; background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 25px; }
-        input, select { padding: 12px; border: 1px solid #ddd; border-radius: 8px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
-        .btn-delete { background: var(--danger); color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; font-size: 11px; }
-        .loader { text-align: center; padding: 20px; display: none; color: var(--primary); font-weight: bold; }
-
-        /* --- MODE LANSKAP (MICRO-COMPACT VERSION) --- */
-        @media screen and (orientation: landscape) {
-            body { padding: 5px; }
-            .container { padding: 8px 15px; border-radius: 5px; }
-            h2 { font-size: 1rem; margin: 0 0 8px 0 !important; }
-            
-            .dashboard-total {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 5px;
-                margin-bottom: 8px;
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563EB',
+                        secondary: '#7C3AED',
+                        success: '#10B981',
+                        danger: '#EF4444',
+                        warning: '#F59E0B',
+                        dark: '#1E293B',
+                        light: '#F8FAFC',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
             }
-            .card { padding: 5px; border-radius: 6px; }
-            .amount { font-size: 12px; margin-top: 2px; }
-            .label { font-size: 7px; letter-spacing: 0; }
-            .card-orang { grid-column: span 1; }
-
-            .btn { padding: 6px; font-size: 11px; margin-bottom: 5px; border-radius: 4px; }
-            
-            #adminForm {
-                display: grid;
-                grid-template-columns: repeat(4, 1fr);
-                gap: 5px;
-                padding: 8px;
-                margin-bottom: 10px;
-            }
-            #adminForm input, #adminForm select {
-                padding: 6px;
-                font-size: 11px;
-                margin-bottom: 0;
-                border-radius: 4px;
-            }
-            .btn-add {
-                grid-column: span 4;
-                margin-top: 2px;
-                padding: 5px;
-            }
-
-            th, td { padding: 4px 6px; font-size: 11px; }
-            .badge { padding: 2px 8px; font-size: 9px; }
-            .search-input { padding: 6px; font-size: 11px; }
-            #btnShowMore { margin-top: 5px; font-size: 10px; padding: 4px; }
         }
-
-        @media screen and (max-width: 600px) and (orientation: portrait) {
-            thead { display: none; }
-            tr { display: block; margin-bottom: 15px; border: 1px solid #eee; border-radius: 10px; padding: 10px; }
-            td { display: flex; justify-content: space-between; border: none; padding: 5px 0; }
-            td::before { content: attr(data-label); font-weight: bold; color: #777; }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .card-shadow {
+                box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            }
+            .card-hover {
+                transition: all 0.3s ease;
+            }
+            .card-hover:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            }
+            .input-focus {
+                transition: all 0.2s ease;
+            }
+            .input-focus:focus {
+                box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+            }
+            .badge-pulse {
+                animation: pulse 2s infinite;
+            }
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.8; }
+            }
+            .glass {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+            }
+            .modal-overlay {
+                background: rgba(15, 23, 42, 0.65);
+            }
         }
     </style>
 </head>
-<body>
+<body class="font-inter bg-gradient-to-br from-slate-50 to-slate-100 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-dark flex items-center justify-center gap-2">
+                <i class="fa fa-credit-card text-primary"></i>
+                IURAN KOMUNITAS DOK
+            </h1>
+            <p class="text-slate-500 mt-1">Pengelolaan kas dan iuran anggota secara digital</p>
+        </div>
 
-<div class="container">
-    <h2 style="text-align:center; color: var(--dark); margin-top:0;">📊 IURAN KOMUNITAS DOK</h2>
+        <!-- Dashboard Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+            <div class="bg-gradient-to-br from-success to-emerald-600 text-white p-6 rounded-2xl card-shadow card-hover">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-white/80 text-sm uppercase tracking-wide" id="labelLunas">Masuk</p>
+                        <h3 class="text-2xl font-bold mt-2" id="sumLunas">Rp 0</h3>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-xl">
+                        <i class="fa fa-arrow-down text-xl"></i>
+                    </div>
+                </div>
+            </div>
 
-    <div class="dashboard-total">
-        <div class="card card-lunas"><span class="label" id="labelLunas">Masuk</span><span class="amount" id="sumLunas">Rp 0</span></div>
-        <div class="card card-belum"><span class="label" id="labelBelum">Piutang</span><span class="amount" id="sumBelum">Rp 0</span></div>
-        <div class="card card-orang" onclick="filterNunggak()"><span class="label">Total Nunggak 🔍</span><span class="amount" id="countBelum">0 Orang</span></div>
+            <div class="bg-gradient-to-br from-danger to-rose-600 text-white p-6 rounded-2xl card-shadow card-hover">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-white/80 text-sm uppercase tracking-wide" id="labelBelum">Piutang</p>
+                        <h3 class="text-2xl font-bold mt-2" id="sumBelum">Rp 0</h3>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-xl">
+                        <i class="fa fa-arrow-up text-xl"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div onclick="filterNunggak()" class="bg-gradient-to-br from-warning to-amber-600 text-white p-6 rounded-2xl card-shadow card-hover cursor-pointer">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-white/80 text-sm uppercase tracking-wide">Total Nunggak</p>
+                        <h3 class="text-2xl font-bold mt-2" id="countBelum">0 Orang</h3>
+                    </div>
+                    <div class="bg-white/20 p-3 rounded-xl">
+                        <i class="fa fa-search text-xl"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Action Buttons -->
+        <div id="searchBox" class="hidden mb-6">
+            <div class="relative">
+                <input type="text" id="searchInput" placeholder="Cari nama anggota..." 
+                       class="w-full px-5 py-3 pl-12 rounded-xl border border-slate-200 bg-white input-focus outline-none">
+                <i class="fa fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+            </div>
+        </div>
+
+        <div class="flex flex-col sm:flex-row gap-3 mb-6">
+            <button onclick="copyReport()" class="flex-1 bg-primary hover:bg-primary/90 text-white py-3 px-5 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                <i class="fa fa-copy"></i> Salin Laporan ke WA
+            </button>
+            <button id="btnShowMore" onclick="toggleShowAll()" class="flex-1 bg-white border border-primary text-primary hover:bg-primary/5 py-3 px-5 rounded-xl font-medium flex items-center justify-center gap-2 transition-all">
+                <i class="fa fa-chevron-down"></i> Tampilkan Semua Data
+            </button>
+        </div>
+
+        <!-- Admin Form -->
+        <div id="adminForm" class="hidden bg-white p-6 rounded-2xl card-shadow mb-8 border border-slate-100">
+            <h3 class="text-lg font-semibold text-dark mb-4 flex items-center gap-2">
+                <i class="fa fa-plus-circle text-primary"></i> Tambah Data Iuran
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Nama Anggota</label>
+                    <input type="text" id="nama" placeholder="Masukkan nama" 
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 input-focus outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Jumlah (Rp)</label>
+                    <input type="text" id="jumlahDisplay" placeholder="0" onkeyup="formatInputRupiah(this)" 
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 input-focus outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Bulan</label>
+                    <input type="month" id="bulan" 
+                           class="w-full px-4 py-2.5 rounded-lg border border-slate-200 input-focus outline-none">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-600 mb-1">Status</label>
+                    <select id="statusAwal" 
+                            class="w-full px-4 py-2.5 rounded-lg border border-slate-200 input-focus outline-none">
+                        <option value="Lunas">Lunas</option>
+                        <option value="Belum Lunas">Belum Lunas</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="addRow()" class="w-full mt-5 bg-dark hover:bg-dark/90 text-white py-2.5 rounded-lg font-medium transition-all">
+                <i class="fa fa-save mr-2"></i> Simpan Data
+            </button>
+        </div>
+
+        <!-- Loader -->
+        <div id="loader" class="hidden py-10 text-center">
+            <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-slate-200 border-t-primary"></div>
+            <p class="mt-3 text-slate-600">Memuat data...</p>
+        </div>
+
+        <!-- Table -->
+        <div class="bg-white rounded-2xl card-shadow overflow-hidden border border-slate-100">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-slate-50 border-b border-slate-200">
+                        <tr>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Nama</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Bulan</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Jumlah</th>
+                            <th class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Status</th>
+                            <th id="thAksi" style="display:none" class="px-6 py-4 text-left text-sm font-semibold text-slate-700">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="isiTabel" class="divide-y divide-slate-100">
+                        <!-- Data akan dimuat di sini -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-8 text-center">
+            <button id="loginBtn" onclick="adminLogin()" class="text-slate-500 hover:text-primary text-sm transition-colors">
+                <i class="fa fa-lock mr-1"></i> Login Admin
+            </button>
+            <button id="logoutBtn" style="display:none" onclick="location.reload()" class="text-slate-500 hover:text-danger text-sm transition-colors ml-4">
+                <i class="fa fa-unlock mr-1"></i> Logout
+            </button>
+        </div>
     </div>
 
-    <div id="searchBox" class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Cari nama anggota..." onkeyup="renderTable()">
+    <!-- Custom Modal untuk Pop-up -->
+    <div id="customModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4">
+        <div class="glass rounded-2xl p-6 w-full max-w-sm transform transition-all scale-95 opacity-0" id="modalContent">
+            <h3 class="text-lg font-semibold text-dark mb-3" id="modalTitle">Konfirmasi</h3>
+            <p class="text-slate-600 mb-5" id="modalText"></p>
+            <div class="flex gap-3 justify-end">
+                <button id="modalCancel" class="px-4 py-2 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">Batal</button>
+                <button id="modalConfirm" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">OK</button>
+            </div>
+        </div>
     </div>
 
-    <button class="btn btn-copy" onclick="copyReport()">📋 Salin Laporan ke WA</button>
+    <script>
+        // --- FUNGSI MODAL KEREN PENGGANTI ALERT & CONFIRM ---
+        function showModal(title, text, showCancel = false, callback = null) {
+            const modal = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            
+            const confirmBtn = document.getElementById('modalConfirm');
+            const cancelBtn = document.getElementById('modalCancel');
+            
+            cancelBtn.style.display = showCancel ? 'block' : 'none';
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.classList.remove('scale-95', 'opacity-0');
+                content.classList.add('scale-100', 'opacity-100');
+            }, 10);
 
-    <div id="adminForm">
-        <input type="text" id="nama" placeholder="Nama">
-        <input type="text" id="jumlahDisplay" placeholder="Rp" onkeyup="formatInputRupiah(this)">
-        <input type="month" id="bulan">
-        <select id="statusAwal">
-            <option value="Lunas">Lunas</option>
-            <option value="Belum Lunas">Belum</option>
-        </select>
-        <button class="btn btn-add" onclick="addRow()">Simpan Data</button>
-    </div>
+            const handleConfirm = () => {
+                hideModal();
+                if (callback) callback(true);
+            };
 
-    <div id="loader" class="loader">Sinkronisasi...</div>
+            const handleCancel = () => {
+                hideModal();
+                if (callback) callback(false);
+            };
 
-    <div style="overflow-x: auto;">
-        <table>
-            <thead><tr><th>Nama</th><th>Bulan</th><th>Jumlah</th><th>Status</th><th id="thAksi" style="display:none">Aksi</th></tr></thead>
-            <tbody id="isiTabel"></tbody>
-        </table>
-    </div>
-
-    <button id="btnShowMore" class="btn" style="background:none; color:var(--primary); border:1px solid var(--primary); margin-top:10px;" onclick="toggleShowAll()">⬇️ Cari / Selengkapnya</button>
-
-    <div style="text-align: center; margin-top: 15px;">
-        <button id="loginBtn" style="background:none; color:#999; border:none; cursor:pointer; font-size: 10px;" onclick="adminLogin()">🔐 Admin</button>
-        <button id="logoutBtn" style="display:none; background:none; color:#999; border:none; cursor:pointer; font-size: 10px;" onclick="location.reload()">🔓 Logout</button>
-    </div>
-</div>
-
-<script>
-    // Script tetap sama tanpa ada perubahan logika sedikitpun
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGTz50Zo6tjuJZW7BJVMVpN8A4uP_l6hOfyAGwryB_ysf9o5iufRRGT9dbqMgP1JPZMw/exec"; 
-    const PASS_ADMIN = "doksolid1234";
-
-    let dataIuran = [];
-    let isAdmin = false;
-    let isShowAll = false;
-    
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
-    const currentYearMonth = `${currentYear}-${currentMonthNum}`;
-    const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-    const namaBulanAktif = daftarBulan[now.getMonth()];
-
-    window.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('labelLunas').innerText = `Masuk (${namaBulanAktif})`;
-        document.getElementById('labelBelum').innerText = `Piutang (${namaBulanAktif})`;
-        document.getElementById('bulan').value = currentYearMonth;
-    });
-
-    function perbaikiBulan(rawStr) {
-        if(!rawStr) return "";
-        if (rawStr.includes("T")) {
-            let tglObj = new Date(rawStr);
-            tglObj.setHours(tglObj.getHours() + 12); 
-            let y = tglObj.getFullYear();
-            let m = String(tglObj.getMonth() + 1).padStart(2, '0');
-            return `${y}-${m}`;
-        }
-        return rawStr.substring(0, 7);
-    }
-
-    async function loadData() {
-        document.getElementById('loader').style.display = 'block';
-        try {
-            const res = await fetch(SCRIPT_URL);
-            const json = await res.json();
-            dataIuran = json.map(item => {
-                let bulanHasil = perbaikiBulan(item.Bulan || item.bulan);
-                return {
-                    Nama: item.Nama || item.nama || "-",
-                    Bulan: bulanHasil,
-                    Jumlah: Number(String(item.Jumlah || 0).replace(/[^\d]/g, "")),
-                    Status: item.Status || item.status || "Belum Lunas",
-                    rowNumber: item.rowNumber
-                };
+            confirmBtn.onclick = handleConfirm;
+            cancelBtn.onclick = handleCancel;
+            
+            document.addEventListener('keydown', function escClose(e) {
+                if (e.key === 'Escape') {
+                    hideModal();
+                    document.removeEventListener('keydown', escClose);
+                }
             });
-            renderTable();
-        } catch (e) { console.error(e); }
-        document.getElementById('loader').style.display = 'none';
-    }
+        }
 
-    function renderTable() {
-        const table = document.getElementById("isiTabel");
-        const keyword = document.getElementById('searchInput').value.toLowerCase();
-        table.innerHTML = "";
-        let lunasRp = 0, belumRp = 0, orangBelum = 0;
-        dataIuran.forEach(item => {
-            if (item.Bulan === currentYearMonth) {
-                if (item.Status === "Lunas") lunasRp += item.Jumlah;
-                else belumRp += item.Jumlah;
+        function hideModal() {
+            const modal = document.getElementById('customModal');
+            const content = document.getElementById('modalContent');
+            content.classList.remove('scale-100', 'opacity-100');
+            content.classList.add('scale-95', 'opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 200);
+        }
+
+        // Ganti fungsi alert standar
+        window.alert = function(text) {
+            showModal('Informasi', text);
+        };
+
+        // --- SCRIPT ASLI TANPA PERUBAHAN LOGIKA ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxGTz50Zo6tjuJZW7BJVMVpN8A4uP_l6hOfyAGwryB_ysf9o5iufRRGT9dbqMgP1JPZMw/exec"; 
+        const PASS_ADMIN = "doksolid1234";
+
+        let dataIuran = [];
+        let isAdmin = false;
+        let isShowAll = false;
+        
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const currentMonthNum = String(now.getMonth() + 1).padStart(2, '0');
+        const currentYearMonth = `${currentYear}-${currentMonthNum}`;
+        const daftarBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const namaBulanAktif = daftarBulan[now.getMonth()];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('labelLunas').innerText = `Masuk (${namaBulanAktif})`;
+            document.getElementById('labelBelum').innerText = `Piutang (${namaBulanAktif})`;
+            document.getElementById('bulan').value = currentYearMonth;
+        });
+
+        function perbaikiBulan(rawStr) {
+            if(!rawStr) return "";
+            if (rawStr.includes("T")) {
+                let tglObj = new Date(rawStr);
+                tglObj.setHours(tglObj.getHours() + 12); 
+                let y = tglObj.getFullYear();
+                let m = String(tglObj.getMonth() + 1).padStart(2, '0');
+                return `${y}-${m}`;
             }
-            if (item.Status === "Belum Lunas") orangBelum++;
-        });
-        document.getElementById("sumLunas").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
-        document.getElementById("sumBelum").innerText = "Rp " + belumRp.toLocaleString('id-ID');
-        document.getElementById("countBelum").innerText = orangBelum + " Org";
-        const filtered = dataIuran.filter(i => i.Nama.toLowerCase().includes(keyword));
-        const display = isShowAll ? filtered : filtered.slice(0, 5);
-        display.forEach(item => {
-            const row = table.insertRow();
-            row.innerHTML = `
-                <td data-label="Nama">${item.Nama}</td>
-                <td data-label="Bulan">${item.Bulan}</td>
-                <td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
-                <td data-label="Status"><span class="badge ${item.Status === 'Lunas' ? 'bg-lunas' : 'bg-belum'}">${item.Status}</span></td>
-                ${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">DEL</button></td>` : ""}
-            `;
-        });
-    }
+            return rawStr.substring(0, 7);
+        }
 
-    async function addRow() {
-        const nama = document.getElementById('nama').value;
-        const jumlah = document.getElementById('jumlahDisplay').value.replace(/\./g, '');
-        const bulanInput = document.getElementById('bulan').value;
-        const status = document.getElementById('statusAwal').value;
-        if (!nama || !jumlah || !bulanInput) return alert("Lengkapi!");
-        const tanggalKirim = bulanInput + "-02";
-        document.getElementById('loader').style.display = 'block';
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nama, jumlah, bulan: tanggalKirim, status }) });
-        setTimeout(() => location.reload(), 1200);
-    }
+        async function loadData() {
+            document.getElementById('loader').style.display = 'block';
+            try {
+                const res = await fetch(SCRIPT_URL);
+                const json = await res.json();
+                dataIuran = json.map(item => {
+                    let bulanHasil = perbaikiBulan(item.Bulan || item.bulan);
+                    return {
+                        Nama: item.Nama || item.nama || "-",
+                        Bulan: bulanHasil,
+                        Jumlah: Number(String(item.Jumlah || 0).replace(/[^\d]/g, "")),
+                        Status: item.Status || item.status || "Belum Lunas",
+                        rowNumber: item.rowNumber
+                    };
+                });
+                renderTable();
+            } catch (e) { console.error(e); }
+            document.getElementById('loader').style.display = 'none';
+        }
 
-    async function deleteRow(rowNum) {
-        if (!confirm("Hapus?")) return;
-        document.getElementById('loader').style.display = 'block';
-        await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", row: rowNum }) });
-        setTimeout(() => location.reload(), 1200);
-    }
+        function renderTable() {
+            const table = document.getElementById("isiTabel");
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            table.innerHTML = "";
+            let lunasRp = 0, belumRp = 0, orangBelum = 0;
+            dataIuran.forEach(item => {
+                if (item.Bulan === currentYearMonth) {
+                    if (item.Status === "Lunas") lunasRp += item.Jumlah;
+                    else belumRp += item.Jumlah;
+                }
+                if (item.Status === "Belum Lunas") orangBelum++;
+            });
+            document.getElementById("sumLunas").innerText = "Rp " + lunasRp.toLocaleString('id-ID');
+            document.getElementById("sumBelum").innerText = "Rp " + belumRp.toLocaleString('id-ID');
+            document.getElementById("countBelum").innerText = orangBelum + " Org";
+            const filtered = dataIuran.filter(i => i.Nama.toLowerCase().includes(keyword));
+            const display = isShowAll ? filtered : filtered.slice(0, 5);
+            display.forEach(item => {
+                const row = table.insertRow();
+                row.className = "hover:bg-slate-50 transition-colors";
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm" data-label="Nama">${item.Nama}</td>
+                    <td class="px-6 py-4 text-sm text-slate-600" data-label="Bulan">${item.Bulan}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-dark" data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
+                    <td class="px-6 py-4 text-sm" data-label="Status">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium ${item.Status === 'Lunas' ? 'bg-success/10 text-success' : 'bg-danger/10 text-danger'}">
+                            ${item.Status}
+                        </span>
+                    </td>
+                    ${isAdmin ? `<td class="px-6 py-4 text-sm" data-label="Aksi">
+                        <button class="px-3 py-1 bg-danger/10 text-danger rounded text-xs hover:bg-danger/20 transition-colors" onclick="deleteRow(${item.rowNumber})">
+                            <i class="fa fa-trash mr-1"></i> Hapus
+                        </button>
+                    </td>` : ""}
+                `;
+            });
+        }
 
-    function adminLogin() {
-        let inputPass = prompt("Password:");
-        if (inputPass === PASS_ADMIN) {
-            isAdmin = true;
-            document.getElementById('adminForm').style.display = 'grid';
-            document.getElementById('logoutBtn').style.display = 'inline';
-            document.getElementById('loginBtn').style.display = 'none';
-            document.getElementById('thAksi').style.display = 'table-cell';
-            renderTable();
-        } else if (inputPass !== null) { alert("Salah!"); }
-    }
+        async function addRow() {
+            const nama = document.getElementById('nama').value;
+            const jumlah = document.getElementById('jumlahDisplay').value.replace(/\./g, '');
+            const bulanInput = document.getElementById('bulan').value;
+            const status = document.getElementById('statusAwal').value;
+            if (!nama || !jumlah || !bulanInput) return alert("Lengkapi semua data yang diperlukan!");
+            const tanggalKirim = bulanInput + "-02";
+            document.getElementById('loader').style.display = 'block';
+            await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ nama, jumlah, bulan: tanggalKirim, status }) });
+            setTimeout(() => location.reload(), 1200);
+        }
 
-    function formatInputRupiah(input) {
-        let val = input.value.replace(/\D/g, "");
-        input.value = val ? parseInt(val).toLocaleString('id-ID') : "";
-    }
+        async function deleteRow(rowNum) {
+            showModal('Konfirmasi Hapus', 'Apakah Anda yakin ingin menghapus data ini?', true, async (confirmed) => {
+                if (!confirmed) return;
+                document.getElementById('loader').style.display = 'block';
+                await fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: "delete", row: rowNum }) });
+                setTimeout(() => location.reload(), 1200);
+            });
+        }
 
-    function toggleShowAll() { isShowAll = !isShowAll; document.getElementById('searchBox').style.display = 'block'; renderTable(); }
+        function adminLogin() {
+            const pass = prompt("Masukkan kata sandi admin:");
+            if (pass === PASS_ADMIN) {
+                isAdmin = true;
+                document.getElementById('adminForm').style.display = 'block';
+                document.getElementById('logoutBtn').style.display = 'inline';
+                document.getElementById('loginBtn').style.display = 'none';
+                document.getElementById('thAksi').style.display = 'table-cell';
+                renderTable();
+                alert("Berhasil masuk sebagai admin!");
+            } else if (pass !== null) {
+                alert("Kata sandi salah!");
+            }
+        }
 
-    function filterNunggak() {
-        isShowAll = true;
-        document.getElementById('searchBox').style.display = 'block';
-        renderTable();
-        const table = document.getElementById("isiTabel");
-        const dataNunggak = dataIuran.filter(i => i.Status === "Belum Lunas");
-        table.innerHTML = dataNunggak.length ? "" : "<tr><td colspan='5' style='text-align:center'>Lunas!</td></tr>";
-        dataNunggak.forEach(item => {
-            const row = table.insertRow();
-            row.innerHTML = `<td data-label="Nama">${item.Nama}</td><td data-label="Bulan">${item.Bulan}</td><td data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td><td data-label="Status"><span class="badge bg-belum">Belum</span></td>${isAdmin ? `<td><button class="btn-delete" onclick="deleteRow(${item.rowNumber})">DEL</button></td>` : ""}`;
-        });
-    }
+        function formatInputRupiah(input) {
+            let val = input.value.replace(/\D/g, "");
+            input.value = val ? parseInt(val).toLocaleString('id-ID') : "";
+        }
 
-    function copyReport() {
-        let txt = `*KAS DOK - ${namaBulanAktif.toUpperCase()} ${currentYear}*\n`;
-        dataIuran.filter(i => i.Bulan === currentYearMonth).forEach(i => {
-            txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
-        });
-        navigator.clipboard.writeText(txt).then(() => alert("Disalin!"));
-    }
+        function toggleShowAll() { 
+            isShowAll = !isShowAll; 
+            document.getElementById('searchBox').style.display = 'block'; 
+            const btn = document.getElementById('btnShowMore');
+            btn.innerHTML = isShowAll 
+                ? '<i class="fa fa-chevron-up mr-2"></i> Sembunyikan' 
+                : '<i class="fa fa-chevron-down mr-2"></i> Tampilkan Semua Data';
+            renderTable(); 
+        }
 
-    window.onload = loadData;
-</script>
+        function filterNunggak() {
+            isShowAll = true;
+            document.getElementById('searchBox').style.display = 'block';
+            const btn = document.getElementById('btnShowMore');
+            btn.innerHTML = '<i class="fa fa-chevron-up mr-2"></i> Sembunyikan';
+            
+            const table = document.getElementById("isiTabel");
+            const dataNunggak = dataIuran.filter(i => i.Status === "Belum Lunas");
+            
+            if (dataNunggak.length === 0) {
+                table.innerHTML = `<tr><td colspan="5" class="px-6 py-8 text-center text-slate-500">✅ Semua anggota sudah melunasi iuran</td></tr>`;
+                return;
+            }
+            
+            table.innerHTML = "";
+            dataNunggak.forEach(item => {
+                const row = table.insertRow();
+                row.className = "hover:bg-slate-50 transition-colors";
+                row.innerHTML = `
+                    <td class="px-6 py-4 text-sm" data-label="Nama">${item.Nama}</td>
+                    <td class="px-6 py-4 text-sm text-slate-600" data-label="Bulan">${item.Bulan}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-dark" data-label="Jumlah">Rp ${item.Jumlah.toLocaleString('id-ID')}</td>
+                    <td class="px-6 py-4 text-sm" data-label="Status">
+                        <span class="px-3 py-1 rounded-full text-xs font-medium bg-danger/10 text-danger">Belum Lunas</span>
+                    </td>
+                    ${isAdmin ? `<td class="px-6 py-4 text-sm">
+                        <button class="px-3 py-1 bg-danger/10 text-danger rounded text-xs hover:bg-danger/20 transition-colors" onclick="deleteRow(${item.rowNumber})">
+                            <i class="fa fa-trash mr-1"></i> Hapus
+                        </button>
+                    </td>` : ""}
+                `;
+            });
+        }
+
+        function copyReport() {
+            let txt = `📊 *KAS DOK - ${namaBulanAktif.toUpperCase()} ${currentYear}*\n\n`;
+            dataIuran.filter(i => i.Bulan === currentYearMonth).forEach(i => {
+                txt += `${i.Status === 'Lunas' ? '✅' : '❌'} ${i.Nama} - Rp ${i.Jumlah.toLocaleString('id-ID')}\n`;
+            });
+            txt += `\n*Total Masuk:* Rp ${document.getElementById('sumLunas').innerText.replace('Rp ', '')}\n`;
+            txt += `*Total Piutang:* Rp ${document.getElementById('sumBelum').innerText.replace('Rp ', '')}`;
+            
+            navigator.clipboard.writeText(txt).then(() => {
+                alert("Laporan berhasil disalin! Siap dibagikan ke WhatsApp.");
+            }).catch(() => {
+                alert("Gagal menyalin. Silakan coba lagi.");
+            });
+        }
+
+        window.onload = loadData;
+    </script>
 </body>
 </html>
